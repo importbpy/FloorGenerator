@@ -2,6 +2,7 @@ import bpy
 from mathutils import Vector
 from random import uniform, seed
 
+"""Creates a list of vertices and list of faces for a single tile"""
 def tile(origin_x, origin_y, tile_x, tile_y, index):
     verts = [
         (origin_x, origin_y, 0),
@@ -27,81 +28,82 @@ def tiles(
     seed(settings.random_seed) # set the random seed
 
     """Calculate the real (normalized) value of the offset"""
-    if settings.center_x:
-        tiles_count_x = int((size_x - gap_x)//(gap_x + tile_x)) - 1
-        offset_x_tmp = (size_x - gap_x 
-            - tiles_count_x*(gap_x + tile_x))/2 + gap_x
-    else:
-        offset_x_tmp = offset_x - ((offset_x)//(tile_x+gap_x))\
-            *(tile_x+gap_x)
+    def calc_tmp_offset(size, offset, tile, gap, center):
+        if center:
+            tiles_count = int((size - gap)//(gap + tile)) - 1
+            offset_tmp = (size - gap 
+                - tiles_count*(gap + tile))/2 + gap
+            return offset_tmp
+        offset_tmp = offset - ((offset)//(tile+gap))\
+            *(tile+gap)
+        return offset_tmp
+
+    offset_x_tmp = calc_tmp_offset(size_x, offset_x, 
+                                    tile_x, gap_x, settings.center_x)
+    offset_y_tmp = calc_tmp_offset(size_y, offset_y, 
+                                    tile_y, gap_y, settings.center_y)
     
-    if settings.center_y:
-        tiles_count_y = int((size_y - gap_y)//(gap_y + tile_y)) - 1
-        offset_y_tmp = (size_y - gap_y - tiles_count_y
-            *(gap_y + tile_y))/2 + gap_y
-    else:
-        offset_y_tmp = offset_y - ((offset_y)//(tile_y+gap_y))\
-            *(tile_y+gap_y)
+    """Calculate the size and eventually the origin of the next tile"""
+    def calc_tile_size_origin(id, size, origin, tile_origin,
+                            offset_tmp, tile, gap):
+        if id==0 and offset_tmp > gap: # first small tile
+            tile_tmp = offset_tmp - gap
+            if tile_tmp > size:
+                tile_tmp = size
+            return tile_tmp, tile_origin
+
+        if id==0 and offset_tmp <= gap: # starting with gap
+            tile_origin += offset_tmp
+            tile_tmp = tile
+            if tile_tmp > size:
+                tile_tmp = size - offset_tmp
+            return tile_tmp, tile_origin
+        
+        if tile_origin + tile > size + origin: # last tile
+            tile_tmp = size + origin - tile_origin
+            return tile_tmp, tile_origin
+        
+        tile_tmp = tile
+        return tile_tmp, tile_origin
+
 
     """Generate rows"""
-    to_y = origin_y # tile origin x
+    tile_origin_y = origin_y # tile origin x
     index = 0 # face index
-    c = 0 # counter
+    row_id = 0 # row counter
     while True:
-        """Define the Y dimension of a tile"""
-        if c==0 and offset_y_tmp > gap_y: # first small tile
-            tile_y_tmp = offset_y_tmp - gap_y
-            if tile_y_tmp > size_y:
-                tile_y_tmp = size_y
-
-        elif c==0 and offset_y_tmp <= gap_y: # starting with gap
-            to_y += offset_y_tmp
-            tile_y_tmp = tile_y
-            if tile_y_tmp > size_y:
-                tile_y_tmp = size_y - offset_y_tmp
-        elif to_y + tile_y > size_y + origin_y: # last tile
-            tile_y_tmp = size_y + origin_y - to_y
-        else: # full size tile
-            tile_y_tmp = tile_y
-        
-        
-
-        if to_y >= size_y + origin_y:
-            break
-
-        """Generate single row"""
+        tile_y_tmp, tile_origin_y = calc_tile_size_origin(row_id, size_y, 
+                                origin_y, tile_origin_y,
+                                offset_y_tmp, tile_y, gap_y)
         if settings.offset_x_random: # random offset of each row
             offset_x_tmp = uniform(0, tile_x + gap_x)
-        to_x = origin_x # tile origin x
-        i = 0 # counter
-        while True:
-            """Define the X dimension of a tile"""
-            if i==0 and offset_x_tmp > gap_x: # first small tile
-                tile_x_tmp = offset_x_tmp - gap_x
-                if tile_x_tmp > size_x:
-                    tile_x_tmp = size_x
-            elif i==0 and offset_x_tmp <= gap_x: # starting with gap
-                to_x += offset_x_tmp
-                tile_x_tmp = tile_x
-                if tile_x_tmp > size_x:
-                    tile_x_tmp = size_x - offset_x_tmp
-            elif to_x + tile_x > size_x + origin_x: # last tile
-                tile_x_tmp = size_x + origin_x - to_x
-            else: # full size tile
-                tile_x_tmp = tile_x
+        
+        if tile_origin_y >= size_y + origin_y:
+            break
 
-            if to_x >= size_x + origin_x:
+        """Generate tiles in the row"""
+        tile_origin_x = origin_x # tile origin x
+        tile_id = 0 # tile counter (per row)
+        while True:
+            tile_x_tmp, tile_origin_x = calc_tile_size_origin(
+                                tile_id, size_x, 
+                                origin_x, tile_origin_x,
+                                offset_x_tmp, tile_x, gap_x)
+
+            if tile_origin_x >= size_x + origin_x:
                 break
 
-            tile_verts, tile_faces = tile(to_x, to_y, tile_x_tmp, 
-                                            tile_y_tmp, index)
+            tile_verts, tile_faces = tile(tile_origin_x, tile_origin_y, 
+                                            tile_x_tmp, tile_y_tmp, 
+                                            index)
             verts.extend(tile_verts)
             faces.extend(tile_faces)
-            to_x += tile_x_tmp + gap_x
+            tile_origin_x += tile_x_tmp + gap_x
             index += 4
-            i += 1
-        to_y += tile_y_tmp +gap_y
-        c += 1
+            tile_id += 1
+        
+        tile_origin_y += tile_y_tmp +gap_y
+        row_id += 1
 
     return verts, faces
 

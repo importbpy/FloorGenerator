@@ -182,6 +182,5 @@ class FBGPanelGridSettings(bpy.types.Panel):
             col.enabled = False
         col.prop(active_obj.floorgen_settings, 'offset_y')
 
-        
-        
+
         

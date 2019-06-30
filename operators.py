@@ -45,3 +45,23 @@ class FloorGenConvert(bpy.types.Operator):
 
         return {"FINISHED"}
 
+class FloorAdd(bpy.types.Operator):
+    bl_idname = "mesh.floor_add"
+    bl_label = "FloorBoards"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(self, context):
+        return context.mode == 'OBJECT'
+
+    def execute(self, context):
+        bpy.ops.mesh.primitive_cube_add()
+        context.active_object.name = "Floor"
+        bpy.ops.mesh.floorgen_convert('INVOKE_DEFAULT')
+        return {'FINISHED'}
+
+def menu_func(self, context):
+    self.layout.operator(FloorAdd.bl_idname, 
+                        text="Floor",
+                        icon='PLUGIN')        
+        

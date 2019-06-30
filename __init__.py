@@ -13,17 +13,19 @@
 
 bl_info = {
     "name" : "Floor Generator",
-    "author" : "Marek Moravec",
-    "description" : "",
+    "author" : "Marek Moravec, based on the Floorboard Generator addon from Michael Anders (varkenvarken) with contributions from Alain, Floric ,Lell",
+    "description" : "Generates floors",
+    "version" : (0, 1),
     "blender" : (2, 80, 0),
-    "location" : "",
-    "warning" : "",
+    "location" : "3D View -> N Panel -> Floor Gen",
+    "warning" : "This version is early alpha. Use it just for testing!",
     "category" : "Generic"
 }
 
 import bpy
 
 from . import auto_load
+from .operators import menu_func
 
 auto_load.init()
 
@@ -31,6 +33,7 @@ auto_load.init()
 
 def register():
     auto_load.register()
-
+    bpy.types.VIEW3D_MT_mesh_add.append(menu_func)
 def unregister():
+    bpy.types.VIEW3D_MT_mesh_add.remove(menu_func)
     auto_load.unregister()
