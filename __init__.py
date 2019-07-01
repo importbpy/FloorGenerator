@@ -23,9 +23,11 @@ bl_info = {
 }
 
 import bpy
+from bpy.props import PointerProperty
 
 from . import auto_load
 from .operators import menu_func
+from .properties import FloorGenSettings
 
 auto_load.init()
 
@@ -34,6 +36,10 @@ auto_load.init()
 def register():
     auto_load.register()
     bpy.types.VIEW3D_MT_mesh_add.append(menu_func)
+    bpy.types.Object.floorgen_settings = bpy.props.PointerProperty(
+            type=FloorGenSettings
+            )
+
 def unregister():
     bpy.types.VIEW3D_MT_mesh_add.remove(menu_func)
     auto_load.unregister()

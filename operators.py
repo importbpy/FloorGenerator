@@ -1,7 +1,5 @@
 import bpy
-from bpy.props import PointerProperty
 
-from .properties import FloorGenSettings
 
 class FloorGenConvert(bpy.types.Operator):
     bl_idname = "mesh.floorgen_convert"
@@ -9,9 +7,6 @@ class FloorGenConvert(bpy.types.Operator):
 
     def invoke(self, context, event):
         
-        bpy.types.Object.floorgen_settings = bpy.props.PointerProperty(
-            type=FloorGenSettings
-            )
         active_obj = bpy.context.active_object
         settings = active_obj.floorgen_settings
         
@@ -47,7 +42,7 @@ class FloorGenConvert(bpy.types.Operator):
 
 class FloorAdd(bpy.types.Operator):
     bl_idname = "mesh.floor_add"
-    bl_label = "FloorBoards"
+    bl_label = "Add Floor"
     bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
