@@ -1,6 +1,16 @@
 import bpy
+from bl_operators.presets import AddPresetBase
+from bpy.types import Operator, Menu, Panel
+from bl_ui.utils import PresetPanel
 
 from .properties import FloorGenSettings
+
+class FLOOR_PT_presets(PresetPanel, Panel):
+    bl_label = "Floor Presets"
+    preset_subdir = "floorgen"
+    preset_operator = "script.execute_preset"
+    preset_add_operator = "floor.add_preset"
+
 
 class FBGPanelMain(bpy.types.Panel):
     """Main panel"""
@@ -11,6 +21,8 @@ class FBGPanelMain(bpy.types.Panel):
     bl_category = "Floor Gen"
     bl_order = 0
     
+    
+
     @classmethod
     def poll(cls, context):
         return ((context.active_object != None)
@@ -37,12 +49,10 @@ class FBGPanelMain(bpy.types.Panel):
             col.prop(active_obj.floorgen_settings, 'size_x')
             col.prop(active_obj.floorgen_settings, 'size_y')
           
-            
-
-            
-
             col = flow.column(align=True)
             col.prop(active_obj.floorgen_settings, 'proxy')
+
+    
 
             
 
@@ -89,6 +99,9 @@ class FBGPanelTileSettings(bpy.types.Panel):
     bl_category = "Floor Gen"
     bl_order = 3
 
+    def draw_header_preset(self, context):
+        FLOOR_PT_presets.draw_panel_header(self.layout)
+        
     @classmethod
     def poll(cls, context):
         return (
@@ -182,5 +195,29 @@ class FBGPanelGridSettings(bpy.types.Panel):
             col.enabled = False
         col.prop(active_obj.floorgen_settings, 'offset_y')
 
+class OT_FloorGenPreset(AddPresetBase, Operator):
+    bl_idname = 'floor.add_preset'
+    bl_label = 'Add Floor Preset'
+    preset_menu = 'OBJECT_MT_floor_presets'  
 
-        
+    preset_defines = [
+        'settings = bpy.context.active_object.floorgen_settings'
+    ]  
+
+    preset_values = [
+        'settings.tile_x',
+        'settings.tile_y',
+        'settings.gap_x',
+        'settings.gap_y',
+        'settings.thickness',
+        'settings.bevel_width'
+    ]
+
+    preset_subdir = 'floorgen'
+
+class MT_FloorPresets(Menu): 
+    bl_idname = "OBJECT_MT_floor_presets"
+    bl_label = 'Floor Presets' 
+    preset_subdir = 'floorgen' 
+    preset_operator = 'script.execute_preset' 
+    draw = Menu.draw_preset

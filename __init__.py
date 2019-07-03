@@ -43,3 +43,4 @@ def register():
 def unregister():
     bpy.types.VIEW3D_MT_mesh_add.remove(menu_func)
     auto_load.unregister()
+    del bpy.types.Object.floorgen_settings
