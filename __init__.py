@@ -13,6 +13,7 @@
 
 #test commit
 #test commit2
+#test commit3 to separate branch testBranch
 
 bl_info = {
     "name" : "Floor Generator",
