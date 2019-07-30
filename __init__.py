@@ -11,6 +11,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+#test commit
+
 bl_info = {
     "name" : "Floor Generator",
     "author" : "Marek Moravec, based on the Floorboard Generator addon from Michael Anders (varkenvarken) with contributions from Alain, Floric ,Lell",
